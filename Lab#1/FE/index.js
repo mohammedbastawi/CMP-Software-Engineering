@@ -7,6 +7,7 @@ function fetchEmployees() {
       const list = data.data
       list.forEach(item => {
         const row = document.createElement('tr')
+
         const idCell = document.createElement('td')
         idCell.textContent = item.id
         row.appendChild(idCell)
@@ -16,11 +17,12 @@ function fetchEmployees() {
         row.appendChild(nameCell)
 
         const deleteCell = document.createElement('td')
-        const deleteButton = document.createElement('button');
-        deleteButton.textContent = 'Delete';
-        deleteButton.classList.add('btn', 'btn-danger', 'btn-sm');
-        deleteCell.appendChild(deleteButton);
-
+        const deleteButton = document.createElement('button')
+        deleteButton.textContent = 'Delete'
+        deleteButton.classList.add('btn', 'btn-danger', 'btn-sm')
+        // add event listener to delete button
+        deleteButton.addEventListener('click', () => deleteEmployee(item.id))
+        deleteCell.appendChild(deleteButton)
         row.appendChild(deleteCell)
 
         tableBody.appendChild(row)
@@ -29,34 +31,79 @@ function fetchEmployees() {
     .catch(error => console.error(error))
 }
 
-// TODO
-// add event listener to submit button
+// add event listener to submit (create) button
+document.getElementById('employeeForm').addEventListener('submit', function (e) {
+  e.preventDefault()
+  createEmployee()
+})
 
-// TODO
 // add event listener to update button
+document.getElementById('updateEmployeeForm').addEventListener('submit', function (e) {
+  e.preventDefault()
+  updateEmployee()
+})
 
-// TODO
-// add event listener to delete button
+function createEmployee() {
+  // get data from input fields
+  const name = document.getElementById('name').value.trim()
+  const id = document.getElementById('id').value.trim()
 
-// TODO
-function createEmployee (){
-  // get data from input field
   // send data to BE
-  // call fetchEmployees
+  fetch('http://localhost:3000/api/v1/employee', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, name }),
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.message) {
+        alert(data.message)
+        return
+      }
+      // clear form fields
+      document.getElementById('employeeForm').reset()
+      // call fetchEmployees
+      fetchEmployees()
+    })
+    .catch(error => console.error(error))
 }
 
-// TODO
-function deleteEmployee (){
-  // get id
+function deleteEmployee(id) {
   // send id to BE
-  // call fetchEmployees
+  fetch(`http://localhost:3000/api/v1/employee/${id}`, {
+    method: 'DELETE',
+  })
+    .then(response => response.json())
+    .then(() => {
+      // call fetchEmployees
+      fetchEmployees()
+    })
+    .catch(error => console.error(error))
 }
 
-// TODO
-function updateEmployee (){
-  // get data from input field
+function updateEmployee() {
+  // get data from input fields
+  const id = document.getElementById('updateId').value.trim()
+  const name = document.getElementById('updateName').value.trim()
+
   // send data to BE
-  // call fetchEmployees
+  fetch(`http://localhost:3000/api/v1/employee/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.message) {
+        alert(data.message)
+        return
+      }
+      // clear form fields
+      document.getElementById('updateEmployeeForm').reset()
+      // call fetchEmployees
+      fetchEmployees()
+    })
+    .catch(error => console.error(error))
 }
 
 fetchEmployees()
